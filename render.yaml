@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: gaah-bookkeeping
+    env: docker
+    repo: gaahbiomedical-dev/GAAH.BOOK
+    branch: main
+    plan: starter
+    dockerfilePath: backend/Dockerfile
+    buildCommand: |
+      # If your frontend uses Node, ensure builds happen inside Dockerfile multi-stage.
+      # This buildCommand runs on Render before Docker build; it's optional when using multi-stage Docker builds.
+      # Keep it if you want to pre-build assets; otherwise Render will build using the Dockerfile.
+      cd frontend || exit 0
+      if [ -f package.json ]; then
+        npm ci
+        npm run build || true
+      fi
+      cd ..
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: WEB_CONCURRENCY
+        value: "2"
+    databases:
+      - gaah-db
+
+databases:
+  - name: gaah-db
+    plan: starter
